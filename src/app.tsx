@@ -1,4 +1,5 @@
 import mapStyle from '@/maplibre-style.ts';
+import { waitForGeomanLoaded } from '@/utils.ts';
 import { Geoman } from '@geoman-io/maplibre-geoman-free';
 import { Map as MapGL, type MapRef } from '@vis.gl/react-maplibre';
 import React, { useEffect, useRef } from 'react';
@@ -8,9 +9,7 @@ import '@geoman-io/maplibre-geoman-free/dist/maplibre-geoman.css';
 
 let promiseChain = Promise.resolve();
 
-function InitGeoman({ mapRef }: {
-  mapRef: React.RefObject<MapRef | null>;
-}) {
+function InitGeoman({ mapRef }: { mapRef: React.RefObject<MapRef | null>; }) {
   useEffect(() => {
     let geoman: Geoman;
     const map = mapRef.current?.getMap();
@@ -22,16 +21,14 @@ function InitGeoman({ mapRef }: {
 
     promiseChain = promiseChain.then(async () => {
       geoman = new Geoman(map, {});
-      await new Promise((resolve) => {
-        map.once('gm:loaded', async () => {
-          resolve(geoman);
-        });
-      });
+      await waitForGeomanLoaded(map, geoman);
+      console.log('loaded!');
     });
 
     return () => {
       promiseChain = promiseChain.then(async () => {
         geoman.destroy();
+        console.log('destroyed!');
       });
     };
   }, []);
