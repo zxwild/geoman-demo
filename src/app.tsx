@@ -1,17 +1,16 @@
 import mapStyle from '@/maplibre-style.ts';
-import { waitForGeomanLoaded } from '@/utils.ts';
-import { Geoman } from '@geoman-io/maplibre-geoman-free';
+import { createGeomanInstance, Geoman } from '@geoman-io/maplibre-geoman-free';
 import { Map as MapGL, type MapRef } from '@vis.gl/react-maplibre';
 import React, { useEffect, useRef } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@geoman-io/maplibre-geoman-free/dist/maplibre-geoman.css';
 
 
-let promiseChain = Promise.resolve();
-
 function InitGeoman({ mapRef }: { mapRef: React.RefObject<MapRef | null>; }) {
+  const promiseChainRef = React.useRef<Promise<void>>(Promise.resolve());
+  const gmRef = React.useRef<Geoman | null>(null);
+
   useEffect(() => {
-    let geoman: Geoman;
     const map = mapRef.current?.getMap();
     console.log('map', map);
 
@@ -19,19 +18,20 @@ function InitGeoman({ mapRef }: { mapRef: React.RefObject<MapRef | null>; }) {
       return;
     }
 
-    promiseChain = promiseChain.then(async () => {
-      geoman = new Geoman(map, {});
-      await waitForGeomanLoaded(map, geoman);
-      console.log('loaded!');
+    promiseChainRef.current = promiseChainRef.current.then(async () => {
+      gmRef.current = await createGeomanInstance(map, {});
+      console.log('geoman loaded!');
     });
 
     return () => {
-      promiseChain = promiseChain.then(async () => {
-        geoman.destroy();
-        console.log('destroyed!');
+      promiseChainRef.current = promiseChainRef.current.then(async () => {
+        if (gmRef.current) {
+          await gmRef.current.destroy();
+          console.log('geoman destroyed!');
+        }
       });
     };
-  }, []);
+  }, [mapRef]);
 
   return null;
 }
