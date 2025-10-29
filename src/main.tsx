@@ -1,9 +1,17 @@
-import App from '@/app.tsx';
-import 'maplibre-gl/dist/maplibre-gl.css';
-import '@geoman-io/maplibre-geoman-free/dist/maplibre-geoman.css';
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import '@/index.css';
+import * as React from 'react';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './app.tsx';
+import './index.css';
 
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error('Root element not found');
+}
+const root = createRoot(rootElement);
 
-ReactDOM.createRoot(document.getElementById('app')!).render(<App />);
+root.render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);
