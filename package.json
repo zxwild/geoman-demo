@@ -10,8 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@geoman-io/maplibre-geoman-free": "^0.5.1",
-    "maplibre-gl": "^5.10.0",
+    "@geoman-io/maplibre-geoman-free": "^0.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "@vis.gl/react-maplibre": "^8.0.4"

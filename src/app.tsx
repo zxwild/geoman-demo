@@ -1,6 +1,6 @@
 import mapStyle from '@/maplibre-style.ts';
 import { waitForGeomanLoaded } from '@/utils.ts';
-import { Geoman } from '@geoman-io/maplibre-geoman-free';
+import { type FeatureCreatedFwdEvent, Geoman } from '@geoman-io/maplibre-geoman-free';
 import { Map as MapGL, type MapRef } from '@vis.gl/react-maplibre';
 import React, { useEffect, useRef } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -19,15 +19,26 @@ function InitGeoman({ mapRef }: { mapRef: React.RefObject<MapRef | null>; }) {
       return;
     }
 
+    const eventHandler = async (event: FeatureCreatedFwdEvent) => {
+      event.feature.updateGeoJsonProperties({ toolType: 'test-123' });
+      await event.feature.source.waitForLoad();
+
+      console.log('feature geojson', event.feature.getGeoJson());
+      console.log('source geojson', event.feature.source.getGeoJson());
+    };
+
     promiseChain = promiseChain.then(async () => {
       geoman = new Geoman(map, {});
       await waitForGeomanLoaded(map, geoman);
       console.log('loaded!');
+
+      map.on('gm:create', eventHandler);
     });
 
     return () => {
       promiseChain = promiseChain.then(async () => {
-        geoman.destroy();
+        map.off('gm:create', eventHandler);
+        await geoman.destroy();
         console.log('destroyed!');
       });
     };
