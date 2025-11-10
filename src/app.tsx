@@ -1,6 +1,5 @@
 import mapStyle from '@/maplibre-style.ts';
-import { waitForGeomanLoaded } from '@/utils.ts';
-import { type FeatureCreatedFwdEvent, Geoman } from '@geoman-io/maplibre-geoman-free';
+import { createGeomanInstance, type FeatureCreatedFwdEvent, Geoman } from '@geoman-io/maplibre-geoman-free';
 import { Map as MapGL, type MapRef } from '@vis.gl/react-maplibre';
 import React, { useEffect, useRef } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -28,8 +27,7 @@ function InitGeoman({ mapRef }: { mapRef: React.RefObject<MapRef | null>; }) {
     };
 
     promiseChain = promiseChain.then(async () => {
-      geoman = new Geoman(map, {});
-      await waitForGeomanLoaded(map, geoman);
+      geoman = await createGeomanInstance(map, {});
       console.log('loaded!');
 
       map.on('gm:create', eventHandler);
