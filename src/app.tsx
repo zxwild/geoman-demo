@@ -1,14 +1,20 @@
 import mapStyle from '@/maplibre-style.ts';
-import { createGeomanInstance, type FeatureCreatedFwdEvent, Geoman } from '@geoman-io/maplibre-geoman-free';
-import { Map as MapGL, type MapRef } from '@vis.gl/react-maplibre';
-import React, { useEffect, useRef } from 'react';
+import {
+  createGeomanInstance,
+  type FeatureCreatedFwdEvent,
+  type FeatureSourceName,
+  Geoman
+} from '@geoman-io/maplibre-geoman-free';
+import {MapGL, type MapRef} from '@/mapgl.tsx';
+import React, {useEffect, useRef} from 'react';
+import '@/style.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@geoman-io/maplibre-geoman-free/dist/maplibre-geoman.css';
 
 
 let promiseChain = Promise.resolve();
 
-function InitGeoman({ mapRef }: { mapRef: React.RefObject<MapRef | null>; }) {
+function InitGeoman({mapRef}: { mapRef: React.RefObject<MapRef | null>; }) {
   useEffect(() => {
     let geoman: Geoman;
     const map = mapRef.current?.getMap();
@@ -19,14 +25,15 @@ function InitGeoman({ mapRef }: { mapRef: React.RefObject<MapRef | null>; }) {
     }
 
     const eventHandler = async (event: FeatureCreatedFwdEvent) => {
-      event.feature.updateGeoJsonProperties({ toolType: 'test-123' });
-      await event.feature.source.waitForLoad();
+      await event.feature.updateProperties({toolType: 'test-123'});
+      await geoman.features.updateManager.waitForPendingUpdates(event.feature.source.id as FeatureSourceName);
 
       console.log('feature geojson', event.feature.getGeoJson());
       console.log('source geojson', event.feature.source.getGeoJson());
     };
 
     promiseChain = promiseChain.then(async () => {
+      // geoman = await createGeomanInstance(map, {settings: {awaitDataUpdatesOnEvents: false}});
       geoman = await createGeomanInstance(map, {});
       console.log('loaded!');
 
@@ -52,8 +59,8 @@ export default function App() {
     <MapGL
       ref={mapRef}
       mapStyle={mapStyle}
-      initialViewState={{ longitude: 0, latitude: 51, zoom: 5 }}
-      style={{ width: '100vw', height: '100vh' }}
+      initialViewState={{longitude: 0, latitude: 51, zoom: 5}}
+      style={{flex: '1 1 auto'}}
     >
       <InitGeoman mapRef={mapRef} />
     </MapGL>
